@@ -1,0 +1,196 @@
+
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>NFT Roulette</title>
+
+<style>
+body {
+  background: #100c20;
+  color: white;
+  font-family: Arial;
+  text-align: center;
+  padding: 20px 10px;
+}
+
+h1 { color: #c7a4ff; }
+
+.roulette {
+  overflow: hidden;
+  background: #211936;
+  border: 2px solid #9565e8;
+  border-radius: 15px;
+  margin: 30px auto;
+  max-width: 550px;
+  position: relative;
+}
+
+.pointer {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  left: 50%;
+  width: 3px;
+  background: gold;
+  z-index: 2;
+}
+
+.track {
+  display: flex;
+  gap: 10px;
+  width: max-content;
+  padding: 15px;
+}
+
+.gift {
+  width: 100px;
+  height: 100px;
+  flex-shrink: 0;
+  background: #493466;
+  border-radius: 12px;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  font-size: 35px;
+}
+
+.gift span {
+  font-size: 12px;
+  margin-top: 7px;
+}
+
+button {
+  background: #9255ed;
+  color: white;
+  border: none;
+  border-radius: 12px;
+  padding: 17px 35px;
+  font-size: 18px;
+  font-weight: bold;
+}
+
+button:disabled { opacity: .5; }
+
+#result {
+  margin-top: 25px;
+  color: #d9baff;
+  font-size: 20px;
+}
+</style>
+</head>
+
+<body>
+
+<h1>🎁 NFT ROULETTE</h1>
+<p>TELEGRAM GIFTS COLLECTION</p>
+
+<div class="roulette">
+  <div class="pointer"></div>
+  <div class="track" id="track"></div>
+</div>
+
+<button id="spin">🎰 КРУТИТЬ</button>
+
+<div id="result">Удачи! 🍀</div>
+
+<script>
+
+const gifts = [
+ {name:"Роза",icon:"🌹",good:false},
+ {name:"Подарок",icon:"🎁",good:false},
+ {name:"Алмаз",icon:"💎",good:true},
+ {name:"Торт",icon:"🎂",good:false},
+ {name:"Трофей",icon:"🏆",good:true},
+ {name:"Звезда",icon:"⭐",good:false},
+ {name:"Корона",icon:"👑",good:true},
+ {name:"Сердце",icon:"❤️",good:false},
+ {name:"Кристалл",icon:"🔮",good:true},
+ {name:"Сюрприз",icon:"🎀",good:false}
+];
+
+const track = document.getElementById("track");
+const button = document.getElementById("spin");
+const result = document.getElementById("result");
+
+function chooseGift() {
+ const weighted = [];
+
+ gifts.forEach(g => {
+   const weight = g.good ? 1 : 2.5;
+   for(let i=0; i<weight*2; i++) {
+     weighted.push(g);
+   }
+ });
+
+ return weighted[Math.floor(Math.random()*weighted.length)];
+}
+
+function makeGift(g) {
+ const div = document.createElement("div");
+ div.className = "gift";
+
+ const icon = document.createElement("div");
+ icon.textContent = g.icon;
+
+ const name = document.createElement("span");
+ name.textContent = g.name;
+
+ div.append(icon,name);
+ return div;
+}
+
+let spinning = false;
+
+button.onclick = () => {
+ if(spinning) return;
+
+ spinning = true;
+ button.disabled = true;
+ result.textContent = "🎰 Крутим рулетку...";
+
+ track.style.transition = "none";
+ track.style.transform = "translateX(0)";
+ track.innerHTML = "";
+
+ const winner = chooseGift();
+ const sequence = [];
+
+ for(let i=0;i<45;i++) {
+   sequence.push(chooseGift());
+ }
+
+ sequence[40] = winner;
+
+ sequence.forEach(g => {
+   track.appendChild(makeGift(g));
+ });
+
+ const cardWidth = 110;
+ const viewport = track.parentElement.clientWidth;
+ const offset = 40*cardWidth + cardWidth/2 - viewport/2;
+
+ requestAnimationFrame(() => {
+   requestAnimationFrame(() => {
+     track.style.transition =
+       "transform 6s cubic-bezier(.12,.75,.15,1)";
+
+     track.style.transform =
+       `translateX(-${offset}px)`;
+   });
+ });
+
+ setTimeout(() => {
+   result.textContent =
+     `🎉 ПОЗДРАВЛЯЕМ! ${winner.icon} ${winner.name}!`;
+
+   button.disabled = false;
+   spinning = false;
+ },6100);
+};
+
+</script>
+</body>
+</html>
